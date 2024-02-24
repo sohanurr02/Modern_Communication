@@ -1,0 +1,22 @@
+% Define parameters
+f = 100e6; % Frequency of the cosine wave - 100 MHz
+A = 10; % Amplitude of the cosine wave - 10 V
+T = 1e-6; % Duration of the signal - 1 us
+Fs = 100 * f; % Sampling frequency - at least 10 times the signal frequency
+
+% Define the time vector
+t = 0:1/Fs:T-1/Fs;
+
+% Generate the cosine signal
+y = A * cos(2 * pi * f * t);
+
+% Plot the signal
+figure;
+plot(t, y);
+title('100 MHz Cosine Signal');
+xlabel('Time (s)');
+ylabel('Amplitude (V)');
+
+% Save the figure
+savefig('CosineSignal.fig');
+saveas(gcf, 'CosineSignal.png');
