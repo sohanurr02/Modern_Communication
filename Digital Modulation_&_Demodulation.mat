@@ -1,0 +1,95 @@
+%% PAM with M=2
+k = 1; M = 2^k; N = 10000;
+i_data = randi([0 M-1], N, 1);
+
+% PAM Modulation and Demodulation
+tx_sig_pam2 = pammod(i_data, M);
+rx_sig_pam2 = pamdemod(tx_sig_pam2, M);
+
+% Compare and report errors
+errors_pam2 = sum(i_data ~= rx_sig_pam2);
+fprintf('PAM M=2, Number of errors: %i\n', errors_pam2);
+
+% Constellation Plot
+figure; scatterplot(tx_sig_pam2); title('PAM Constellation (M=2)');
+savefig('pam_constellation_m2.fig'); saveas(gcf, 'pam_constellation_m2.png');
+
+%% PAM with k=3 & M=8
+k = 3; M = 2^k;
+i_data = randi([0 M-1], N, 1);
+
+% PAM Modulation and Demodulation
+tx_sig_pam8 = pammod(i_data, M);
+rx_sig_pam8 = pamdemod(tx_sig_pam8, M);
+
+% Compare and report errors
+errors_pam8 = sum(i_data ~= rx_sig_pam8);
+fprintf('PAM M=8, Number of errors: %i\n', errors_pam8);
+
+% Constellation Plot
+figure; scatterplot(tx_sig_pam8); title('PAM Constellation (M=8)');
+savefig('pam_constellation_m8.fig'); saveas(gcf, 'pam_constellation_m8.png');
+
+%% QAM Modulation and Demodulation with M=2 and M=8
+for k = [1, 3]
+    M = 2^k;
+    i_data = randi([0 1], N*k, 1);
+    
+    % QAM Modulation and Demodulation
+    tx_sig_qam = qammod(i_data, M, 'InputType', 'bit', 'UnitAveragePower', true);
+    rx_sig_qam = qamdemod(tx_sig_qam, M, 'OutputType', 'bit');
+    
+    % Compare and report errors
+    errors_qam = sum(i_data ~= rx_sig_qam);
+    fprintf('QAM M=%d, Number of errors: %i\n', M, errors_qam);
+    
+    % Constellation Plot
+    figure; scatterplot(tx_sig_qam); title(sprintf('QAM Constellation (M=%d)', M));
+    savefig(sprintf('qam_constellation_m%d.fig', M)); saveas(gcf, sprintf('qam_constellation_m%d.png', M));
+end
+
+%% 64-QAM with and without Gray Coding
+M = 64;
+i_data = randi([0 1], N*log2(M), 1);
+
+% QAM Modulation with Gray coding
+tx_sig_64qam_gray = qammod(i_data, M, 'InputType', 'bit', 'UnitAveragePower', true, 'PlotConstellation', true);
+
+% Demodulate without Gray coding
+rx_sig_64qam_nogray = qamdemod(tx_sig_64qam_gray, M, 'OutputType', 'bit');
+errors_nogray = sum(i_data ~= rx_sig_64qam_nogray);
+fprintf('64-QAM without Gray coding, Number of errors: %i\n', errors_nogray);
+
+% Demodulate with Gray coding
+rx_sig_64qam_gray = qamdemod(tx_sig_64qam_gray, M, 'OutputType', 'bit', 'PlotConstellation', true);
+errors_gray = sum(i_data ~= rx_sig_64qam_gray);
+fprintf('64-QAM with Gray coding, Number of errors: %i\n', errors_gray);
+
+%% PSK with M=8 (8-PSK)
+M = 8;
+i_data = randi([0 M-1], N, 1);
+
+% PSK Modulation and Demodulation
+tx_sig_8psk = pskmod(i_data, M);
+rx_sig_8psk = pskdemod(tx_sig_8psk, M);
+
+% Compare and report errors
+errors_8psk = sum(i_data ~= rx_sig_8psk);
+fprintf('8-PSK, Number of errors: %i\n', errors_8psk);
+
+% Constellation Plot
+figure; scatterplot(tx_sig_8psk); title('8-PSK Constellation');
+savefig('psk_constellation_m8.fig'); saveas(gcf, 'psk_constellation_m8.png');
+
+%% Add AWGN with SNR of 20 dB and 12 dB for 64-QAM and 8-PSK
+for snr = [20, 12]
+    % 64-QAM
+    rx_sig_64qam_awgn = awgn(tx_sig_64qam_gray, snr, 'measured');
+    figure; scatterplot(rx_sig_64qam_awgn); title(sprintf('64-QAM with AWGN, SNR=%d dB', snr));
+    savefig(sprintf('64qam_awgn_snr%d.fig', snr)); saveas(gcf, sprintf('64qam_awgn_snr%d.png', snr));
+    
+    % 8-PSK
+    rx_sig_8psk_awgn = awgn(tx_sig_8psk, snr, 'measured');
+    figure; scatterplot(rx_sig_8psk_awgn); title(sprintf('8-PSK with AWGN, SNR=%d dB', snr));
+    savefig(sprintf('8psk_awgn_snr%d.fig', snr)); saveas(gcf, sprintf('8psk_awgn_snr%d.png', snr));
+end
